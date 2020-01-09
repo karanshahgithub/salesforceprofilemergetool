@@ -1,0 +1,317 @@
+public class profileComparitorCall {
+
+     
+    public List<SelectOption>permissionName {get;set;}
+    public String permissionSelected  {get;set;}
+    public boolean showScreen1 {get;set;} 
+    public boolean showScreen2 {get;set;}
+    public boolean showScreen3 {get;set;}
+    public String profileSelected {get;set;}
+    public String objectSelected {get;set;}
+    
+    
+    public profileComparitorcall(){
+        String value1 = 'none';
+        String value2 = 'objectPermissions';
+        String value3 = 'fieldPermissions';
+        permissionName = new List<SelectOption>();
+        permissionName.add(new SelectOption(value1,value1));
+        permissionName.add(new SelectOption(value2,value2));
+        permissionName.add(new SelectOption(value3,value3));
+        System.debug(permissionName);
+        showScreen1 = true;
+        showScreen2  = false;
+        showScreen3 = false;
+        
+        profileSelected = ' ';
+        objectSelected = ' ';
+       
+    }
+    
+    
+    public void permSelFunction(){
+        
+         if(permissionSelected.equals('none')){
+          showScreen1 = true;
+          showScreen2 = false;  
+          showScreen3 = false;   
+        }
+        
+        if(permissionSelected.equals('objectPermissions')){
+            showScreen2 = true;
+            showScreen1 = false;
+            showScreen3 = false;
+          }
+        
+        if(permissionSelected.equals('fieldPermissions')){
+             showScreen3 = true;
+             showScreen1 = false; 
+             showScreen2 = false;       
+          }
+    }
+    
+    
+    public void function1(){
+            
+        List<String> profileSelectedStringList = profileSelected.split(',');
+        List<String> objectSelectedStringList = objectSelected.split(',');
+        
+        
+        List<List<objectPermissions>> objectPermissionList = new List<List<objectPermissions>>();
+        String packageVariable = '';
+        
+        // making List of Lists
+        
+        List<objectPermissions> obj1 = new List<objectPermissions>([SELECT Parent.Profile.Name,PermissionsCreate,PermissionsDelete,PermissionsEdit,PermissionsModifyAllRecords,PermissionsRead,PermissionsViewAllRecords,SobjectType FROM ObjectPermissions WHERE Parent.Profile.Name = :profileSelectedStringList AND SobjectType IN :objectSelectedStringList]);
+       
+        for(String s:profileSelectedStringList){
+            
+            List<objectPermissions> obj3 = new List<objectPermissions>();
+                
+            for(objectPermissions obj2:obj1){
+                
+                if(obj2.Parent.Profile.Name ==s){
+                    obj3.add(obj2);
+                }
+                
+              }
+            
+            objectPermissionList.add(obj3);
+          }
+        
+        
+              
+
+        Map<String,objectPermissions>keyToObjectPermissionFinal = function2(objectPermissionList);
+        
+        // making XML packageVariable
+        for(String s:keyToObjectPermissionFinal.keyset()){
+             objectPermissions objectPermissionObject = keyToObjectPermissionFinal.get(s);
+            
+            packageVariable = packageVariable +'\n'+ '<objectPermissions>' + '\n' +
+                                              '<allowCreate>'+objectPermissionObject.PermissionsCreate+'</allowCreate>'+'\n'+
+                                              '<allowDelete>'+objectPermissionObject.PermissionsDelete+'</allowDelete>'+'\n'+
+                                              '<allowEdit>'+objectPermissionObject.PermissionsEdit+'</allowEdit>'+'\n'+
+                                              '<allowRead>'+objectPermissionObject.PermissionsRead+'</allowRead>'+'\n'+
+                                              '<modifyAllRecords>'+objectPermissionObject.PermissionsModifyAllRecords+'</modifyAllRecords>'+'\n'+
+                                              '<object>'+objectPermissionObject.SobjectType+'</object>'+'\n'+
+                                              '<viewAllRecords>'+objectPermissionObject.PermissionsViewAllRecords+'</viewAllRecords>'+'\n'+
+                                              '</objectPermissions>';
+
+
+                    }
+        
+           // generating file 
+            Document d = new Document(); 
+            d.Name = 'my text file2'; 
+            d.Body = Blob.valueOf(packageVariable); 
+            d.ContentType = 'text/plain';
+            d.Type = 'txt';
+            d.FolderId = '00l6F0000028LsPQAU';
+            insert d;
+        
+     
+        System.debug(packageVariable);
+       System.debug(keyToObjectPermissionFinal);
+       }
+    
+    
+    
+     public Map<String,ObjectPermissions> function2(List<List<ObjectPermissions>>objectPermissionList){
+        
+        List<Map<String,ObjectPermissions>>keyToObjectPermissionList = new List<Map<String,ObjectPermissions>>();
+        Map<String,ObjectPermissions>keyToObjectPermissionFinal = new Map<String,ObjectPermissions>();
+        Map<String,ObjectPermissions>keyToObjectPermissionInitial = new Map<String,ObjectPermissions>();
+        
+        // Making Map
+        
+        for(integer i=0;i<objectPermissionList.size();i++){
+            
+            Map<String,ObjectPermissions>keyToObjectPermissionInter = new Map<String,ObjectPermissions>();
+             
+            for(ObjectPermissions op :objectPermissionList[i]){
+                
+                  keyToObjectPermissionInter.put(op.SobjectType,op);                  
+                
+            }
+            
+            keyToObjectPermissionList.add(keyToObjectPermissionInter);
+            
+         }      
+        
+    // Comparing And Making Final Map
+        
+        keyToObjectPermissionInitial = keyToObjectPermissionList[0];
+        
+        for(String s:keyToObjectPermissionInitial.keySet()){
+            ObjectPermissions objectRecord = keyToObjectPermissionInitial.get(s);
+            
+            if(objectRecord.PermissionsCreate && objectRecord.PermissionsDelete && objectRecord.PermissionsEdit && objectRecord.PermissionsModifyAllRecords  && objectRecord.PermissionsRead  && objectRecord.PermissionsViewAllRecords)
+            {
+                keyToObjectPermissionFinal.put(s,objectRecord); 
+                continue; 
+            }
+            
+            
+            for(integer i=1;i<objectPermissionList.size();i++){
+                
+                Map<String,ObjectPermissions>keyToObjectPermissionIntermediate = keyToObjectPermissionList[i];                             
+                ObjectPermissions objectRecordIntermediate = keyToObjectPermissionIntermediate.get(s);
+                
+                if(!objectRecord.PermissionsCreate  && objectRecordIntermediate.PermissionsCreate)
+                    objectRecord.PermissionsCreate = true;
+                if(!objectRecord.PermissionsDelete  && objectRecordIntermediate.PermissionsDelete)
+                    objectRecord.PermissionsDelete = true;
+                if(!objectRecord.PermissionsEdit  && objectRecordIntermediate.PermissionsEdit)
+                    objectRecord.PermissionsEdit = true;
+                if(!objectRecord.PermissionsRead  && objectRecordIntermediate.PermissionsRead)
+                    objectRecord.PermissionsRead = true;
+                if(!objectRecord.PermissionsViewAllRecords  && objectRecordIntermediate.PermissionsViewAllRecords)
+                    objectRecord.PermissionsViewAllRecords = true;
+                if(!objectRecord.PermissionsModifyAllRecords  && objectRecordIntermediate.PermissionsModifyAllRecords)
+                    objectRecord.PermissionsModifyAllRecords = true;
+                
+            }
+            
+            keyToObjectPermissionFinal.put(s,objectRecord);
+            
+        }
+    
+         return keyToObjectPermissionFinal;
+    }
+   
+    
+    public void function3(){
+        
+        List<String> profileSelectedStringList = profileSelected.split(',');
+        List<String> objectSelectedStringList = objectSelected.split(',');
+        
+        List<List<fieldPermissions>> fieldPermissionList = new List<List<fieldPermissions>>();
+        String packageVariable = '';
+        
+        // making List of list
+       
+        List<fieldPermissions> obj1 = new List<fieldPermissions>([SELECT Parent.Profile.Name,Field,PermissionsEdit,PermissionsRead,SobjectType FROM FieldPermissions WHERE Parent.Profile.Name = :profileSelectedStringList AND SobjectType IN :objectSelectedStringList]);
+        
+        
+        For(String s:profileSelectedStringList){
+            
+            List<fieldPermissions> obj3 = new List<fieldPermissions>();
+                
+            for(fieldPermissions obj2:obj1){
+                
+                if(obj2.Parent.Profile.Name ==s){
+                    obj3.add(obj2);
+                }
+                
+              }
+            
+            fieldPermissionList.add(obj3);
+          }
+        
+        
+        Map<String,fieldPermissions>keyToFieldPermissionFinal = function4(fieldPermissionList);
+        
+        // making XML packageVariable
+        for(String s:keyToFieldPermissionFinal.keyset()){
+             fieldPermissions fieldPermissionObject = keyToFieldPermissionFinal.get(s);
+            
+            packageVariable = packageVariable +'\n'+ '<fieldPermissions>' + '\n' +
+                                              '<editable>'+fieldPermissionObject.PermissionsEdit+'</editable>'+'\n'+
+                                              '<field>'+fieldPermissionObject.Field+'</field>'+'\n'+
+                                              '<readable>'+fieldPermissionObject.PermissionsRead+'</readable>'+'\n'+
+                                              '</fieldPermissions>';
+                                              
+                                              
+                    }
+        
+           // generating file 
+            Document d = new Document(); 
+            d.Name = 'my text file2'; 
+            d.Body = Blob.valueOf(packageVariable); 
+            d.ContentType = 'text/plain';
+            d.Type = 'txt';
+            d.FolderId = '00l6F0000028LsPQAU';
+            insert d;
+        
+     
+        System.debug(packageVariable);
+       System.debug(keyToFieldPermissionFinal);
+    
+   }
+    
+   
+      public Map<String,FieldPermissions> function4(List<List<FieldPermissions>>fieldPermissionList){
+          
+        List<Map<String,fieldPermissions>>keyToFieldPermissionList = new List<Map<String,fieldPermissions>>();
+        Map<String,fieldPermissions>keyToFieldPermissionFinal = new Map<String,fieldPermissions>();
+        Map<String,fieldPermissions>keyToFieldPermissionInitial = new Map<String,FieldPermissions>();
+
+          
+          
+          // Making Map
+        
+        for(integer i=0;i<fieldPermissionList.size();i++){
+            
+            Map<String,fieldPermissions>keyToFieldPermissionInter = new Map<String,fieldPermissions>();
+             
+            for(fieldPermissions op :fieldPermissionList[i]){
+                
+                  keyToFieldPermissionInter.put(op.Field,op);                  
+                
+            }
+            
+            keyToFieldPermissionList.add(keyToFieldPermissionInter);
+            
+         }              
+    
+      
+      // comparing and making final map
+      
+       keyToFieldPermissionInitial = keyToFieldPermissionList[0];
+        
+        for(String s:keyToFieldPermissionInitial.keySet()){
+            fieldPermissions fieldRecord = keyToFieldPermissionInitial.get(s);
+            
+            if(fieldRecord.PermissionsEdit && fieldRecord.PermissionsRead)
+            {
+                keyToFieldPermissionFinal.put(s,fieldRecord); 
+                continue; 
+            }
+            
+            
+            for(integer i=1;i<fieldPermissionList.size();i++){
+                
+                Map<String,fieldPermissions>keyToFieldPermissionIntermediate = keyToFieldPermissionList[i];                             
+                FieldPermissions fieldRecordIntermediate = keyToFieldPermissionIntermediate.get(s);
+                
+                if(!fieldRecord.PermissionsEdit  && fieldRecord.PermissionsEdit)
+                    fieldRecord.PermissionsEdit = true;
+                if(!fieldRecord.PermissionsRead  && fieldRecord.PermissionsRead)
+                    fieldRecord.PermissionsRead = true;
+					
+					
+                
+                
+            }
+            
+            keyToFieldPermissionFinal.put(s,fieldRecord);
+            
+        }
+    
+         return keyToFieldPermissionFinal;
+
+          
+          
+      }
+    
+    
+    
+    
+       
+    
+    
+    
+    	
+    
+}

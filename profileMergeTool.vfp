@@ -1,0 +1,127 @@
+<apex:page controller="profileComparitorCall" sidebar="false">
+
+    <html>
+        <body>
+            
+            <h1>
+                 PROFILE MEREGE TOOL
+            </h1>
+        </body>
+    </html>
+    <apex:form >
+        
+        <apex:actionFunction name="permissionSelectedFunction" action="{!permSelFunction}" rerender="detail"/>
+  
+        
+        <apex:actionFunction name="function1" action="{!function1}" rerender="detail"/>
+        <apex:actionFunction name="function3" action="{!function3}" rerender="detail"/>    
+         
+    
+        
+      
+     <apex:outputPanel id="detail">
+      <apex:outputPanel rendered="{!showScreen1}">
+           <table border="1">
+                   <tr>
+                        <td>
+                            SELECT PERMISSIONS    
+                        </td>
+                        <td>
+                            <apex:selectList id="pid" value="{!permissionSelected}" size="1" required="true" multiselect="false" onchange="permissionSelectedFunction()"  >
+                            <apex:selectOptions value="{!permissionName}"/>
+                            </apex:selectList>
+                         </td>
+                   </tr>
+          </table>
+        </apex:outputPanel>
+        
+         <apex:outputPanel rendered="{!showScreen2}">
+            <table border="1">
+                
+                   <tr>
+                        <td>
+                            SELECT PERMISSIONS    
+                        </td>
+                        <td>
+                            <apex:selectList id="qid" value="{!permissionSelected}" size="1" required="true" multiselect="false" onchange="permissionSelectedFunction()" >
+                            <apex:selectOptions value="{!permissionName}"/>
+                            </apex:selectList>
+                         </td>
+                   </tr>
+                    <tr>
+                       <td>
+                          ENTER PROFILES TO BE MERGED
+
+                       </td>
+                        <td>
+                          <apex:inputText value="{!profileSelected}"  />
+                        
+                        </td>
+                        
+                    </tr>
+                    
+                   <tr>
+                       <td>
+                           ENTER OBJECTS TO BE COMPARED
+                       </td>
+                       <td>
+                           <apex:inputText value="{!objectSelected}" />
+                       </td>   
+                   </tr>
+                  
+                 <tr>
+                     <td>
+                         <apex:commandButton value="GENERATE" action="{!function1}"/>
+                     </td>
+                
+                </tr>
+             </table>
+    </apex:outputPanel>
+         
+         <apex:outputPanel rendered="{!showScreen3}">
+            <table border="1">
+                
+                   <tr>
+                        <td>
+                            SELECT PERMISSIONS    
+                        </td>
+                        <td>
+                            <apex:selectList id="rid" value="{!permissionSelected}" size="1" required="true" multiselect="false" onchange="permissionSelectedFunction()" >
+                            <apex:selectOptions value="{!permissionName}"/>
+                            </apex:selectList>
+                         </td>
+                   </tr>
+                    <tr>
+                       <td>
+                          ENTER PROFILES TO BE MERGED
+
+                       </td>
+                        <td>
+                          <apex:inputText value="{!profileSelected}"  />
+                        
+                        </td>
+                        
+                    </tr>
+                    
+                   <tr>
+                       <td>
+                           ENTER OBJECTS TO BE COMPARED
+                       </td>
+                       <td>
+                           <apex:inputText value="{!objectSelected}" />
+                       </td>   
+                   </tr>
+                  
+                 <tr>
+                     <td>
+                         <apex:commandButton value="GENERATE" action="{!function3}"/>
+                     </td>
+                
+                </tr>
+             </table>
+    </apex:outputPanel>       
+  </apex:outputPanel>          
+ 
+ </apex:form>
+
+</apex:page>
