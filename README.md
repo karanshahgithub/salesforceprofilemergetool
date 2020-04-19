@@ -21,4 +21,4 @@
 11) You will find XML package of required permissions for target profile formed by merging profiles.
 12) Deploy that package in target Salesforce org. 
 
-Here is attached screencast to use this tool: https://www.screencast.com/t/CRdOuwBg2
+Here is link of screencast to use this tool: https://www.screencast.com/t/CRdOuwBg2
